@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# مسیر فایل: core/modules/status_module.py
+
+from typing import Dict, Any, Optional
+import sys
+import os
+
+# مسیر‌دهی برای ایمپورت داخلی
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
+from core.interfaces.module_interface import BaseModule
+from core.utils.system_check import check_all
+
+
+class StatusModule(BaseModule):
+    """
+    ماژول بررسی وضعیت ابزارهای اصلی سیستم (python, node, npm, docker, git)
+    """
+
+    def validate(self, args: Dict[str, Any]) -> tuple[bool, Optional[str]]:
+        # فعلاً آرگیومانی لازم ندارد، ولی برای آینده پایه‌ی خوبی‌ست.
+        return True, None
+
+    def execute(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        بررسی ابزارها و برگرداندن خلاصه‌ی نصب و نسخه‌ها
+        """
+        verbose = args.get("verbose", False)
+
+        tools = check_all()
+
+        installed_count = sum(1 for t in tools.values() if t["installed"])
+        total_count = len(tools)
+
+        return {
+            "success": True,
+            "data": {
+                "tools": tools,
+                "summary": {
+                    "installed": installed_count,
+                    "total": total_count,
+                    "missing": total_count - installed_count,
+                },
+            },
+            "message": f"{installed_count}/{total_count} tools installed",
+            "errors": [],
+        }
+
+    def format_output(self, result: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        قالب‌بندی خروجی برای نمایش زیباتر
+        """
+        if not result.get("success"):
+            return result
+
+        tools = result["data"]["tools"]
+        formatted_tools = {}
+
+        for name, info in tools.items():
+            if info["installed"]:
+                formatted_tools[name] = f"✅ {info['version']}"
+            else:
+                formatted_tools[name] = "❌ Not installed"
+
+        result["data"]["formatted"] = formatted_tools
+
+        return result
