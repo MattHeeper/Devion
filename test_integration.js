@@ -5,18 +5,21 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// فرمان تست
 const command = 'help';
-const argsJson = '{}'
+const argsJson = '{}';
 
-const corePath = path.join(__dirname, 'core');
+// مسیر پروژه
+const projectRoot = __dirname; // یعنی همون جایی که core داخلشه
+const coreMain = path.join(projectRoot, 'core', 'main.py');
 
-console.log('🔧 Running `status` command...');
-console.log('📂 Current working dir:', process.cwd());
-console.log('🐍 Core path:', corePath);
+console.log('🚀 Running Devion test...');
+console.log('📂 Project root:', projectRoot);
+console.log('🐍 Core main path:', coreMain);
 
 const python = spawn('python3', ['-m', 'core.main', command, argsJson], {
-  cwd: __dirname, 
-  env: { ...process.env, PYTHONPATH: corePath },
+  cwd: projectRoot,
+  env: { ...process.env, PYTHONPATH: projectRoot }, // 🔥 درستش اینه
 });
 
 python.stdout.on('data', (data) => {
@@ -30,4 +33,3 @@ python.stderr.on('data', (data) => {
 python.on('close', (code) => {
   console.log(`⚙️ Python exited with code ${code}`);
 });
-
