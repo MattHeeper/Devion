@@ -5,7 +5,6 @@ from datetime import datetime
 import subprocess
 
 class FixModule:
-    """Automatically detects and fixes common environment issues."""
 
     def run(self, args=None):
         home_dir = os.path.expanduser("~")
@@ -15,12 +14,10 @@ class FixModule:
         fixed_items = []
         errors = []
 
-        # 1️⃣ بررسی وجود پوشه .devion
         if not os.path.exists(devion_dir):
             os.makedirs(devion_dir, exist_ok=True)
             fixed_items.append("Created missing .devion directory")
 
-        # 2️⃣ بررسی فایل config.json
         if not os.path.exists(config_file):
             default_config = {
                 "created_at": datetime.now().isoformat(),
@@ -35,7 +32,6 @@ class FixModule:
                 json.dump(default_config, f, indent=2)
             fixed_items.append("Recreated missing config.json")
 
-        # 3️⃣ بررسی ابزارهای حیاتی
         tools = {
             "python": "python3 --version",
             "node": "node --version",
@@ -55,7 +51,6 @@ class FixModule:
         else:
             fixed_items.append("All required tools are installed")
 
-        # 4️⃣ نتیجه نهایی
         return {
             "success": len(errors) == 0,
             "data": {

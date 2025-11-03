@@ -2,7 +2,6 @@ import os
 import json
 
 class ConfigModule:
-    """Manage Devion configuration settings."""
 
     def __init__(self):
         self.config_path = os.path.join(os.path.expanduser("~"), ".devion", "config.json")
@@ -18,7 +17,6 @@ class ConfigModule:
         with open(self.config_path, "r", encoding="utf-8") as f:
             config = json.load(f)
 
-        # اگر هیچ آرگیومانی ندادیم → فقط نمایش بده
         if not args or len(args) == 0:
             return {
                 "success": True,
@@ -26,7 +24,6 @@ class ConfigModule:
                 "data": config
             }
 
-        # تغییر مقدار خاص (مثلاً: devion config language fa)
         if len(args) >= 2:
             key = args[0]
             value = args[1]
@@ -51,7 +48,6 @@ class ConfigModule:
                     "data": None
                 }
 
-        # اگر فرمت اشتباه بود
         return {
             "success": False,
             "message": "⚠️ Invalid usage. Example: devion config language fa",
