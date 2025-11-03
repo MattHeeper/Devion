@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-# مسیر فایل: core/interfaces/cli_bridge.py
 
 import sys
 import json
@@ -10,7 +7,6 @@ from core.main import handle_command
 
 
 def read_stdin() -> str:
-    """ورودی خام از stdin را می‌خواند (برای تعامل با Node یا ترمینال)."""
     try:
         data = sys.stdin.read().strip()
         return data
@@ -25,7 +21,6 @@ def read_stdin() -> str:
 
 
 def parse_input(raw_data: str):
-    """ورودی را از JSON یا رشته ساده تبدیل می‌کند به dict مناسب."""
     if not raw_data:
         return {"command": "", "args": {}}
     
@@ -41,12 +36,10 @@ def parse_input(raw_data: str):
         else:
             return {"command": "", "args": {}}
     except json.JSONDecodeError:
-        # اگر JSON نبود، فرض می‌کنیم رشته‌ی ساده است
         return {"command": raw_data.strip(), "args": {}}
 
 
 def main():
-    """درگاه CLI برای Devion"""
     try:
         raw_data = read_stdin()
         payload = parse_input(raw_data)

@@ -6,7 +6,6 @@ class UseModule:
         args = args or {}
         target = args.get("target", "default")
 
-        # شبیه‌سازی فعال‌سازی محیط یا پروفایل خاص
         result = {
             "activated_at": datetime.now().isoformat(),
             "target": target,

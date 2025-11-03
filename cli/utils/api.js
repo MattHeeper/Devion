@@ -10,14 +10,13 @@ export function callPython(command, args = {}) {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     
-    // اضافه کردن پوشه‌ی 'core' به PYTHONPATH
     const corePath = path.join(__dirname, '../../core');
     
     const argsJson = JSON.stringify(args);
     
     const python = spawn('python3', ['-m', 'core.main', command, argsJson], {
       cwd: path.join(__dirname, '../..'),
-      env: { ...process.env, PYTHONPATH: corePath }  // اضافه کردن مسیر core به محیط
+      env: { ...process.env, PYTHONPATH: corePath }  
     });
 
     let stdout = '';

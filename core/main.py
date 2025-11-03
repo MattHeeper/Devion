@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import sys
 import json
@@ -15,6 +13,7 @@ COMMAND_MAP = {
     "config": "core.modules.config_module.ConfigModule",
     "use": "core.modules.use_module.UseModule",
     "deploy": "core.modules.deploy_module.DeployModule",
+    "help": "core.modules.help_module.HelpModule",
 }
 
 

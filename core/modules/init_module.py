@@ -4,15 +4,12 @@ from datetime import datetime
 
 class InitModule:
     def run(self, args=None):
-        """Initialize Devion configuration and folders."""
         home_dir = os.path.expanduser("~")
         devion_dir = os.path.join(home_dir, ".devion")
         config_file = os.path.join(devion_dir, "config.json")
 
-        # ساخت پوشه اصلی اگه وجود نداشت
         os.makedirs(devion_dir, exist_ok=True)
 
-        # داده‌های پیش‌فرض تنظیمات
         default_config = {
             "created_at": datetime.now().isoformat(),
             "version": "1.0.0",
@@ -23,7 +20,6 @@ class InitModule:
             }
         }
 
-        # ذخیره در فایل config.json
         with open(config_file, "w", encoding="utf-8") as f:
             json.dump(default_config, f, indent=2)
 

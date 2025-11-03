@@ -6,7 +6,6 @@ import subprocess
 import json
 
 class ScanModule:
-    """اسکن کامل سیستم و بررسی ابزارها و مسیرهای اصلی Devion"""
 
     def run(self, args=None):
         args = args or {}

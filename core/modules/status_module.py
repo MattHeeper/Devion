@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-# مسیر فایل: core/modules/status_module.py
 
 from typing import Dict, Any, Optional
 import sys
@@ -14,18 +11,11 @@ from core.utils.system_check import check_all
 
 
 class StatusModule(BaseModule):
-    """
-    ماژول بررسی وضعیت ابزارهای اصلی سیستم (python, node, npm, docker, git)
-    """
 
     def validate(self, args: Dict[str, Any]) -> tuple[bool, Optional[str]]:
-        # فعلاً آرگیومانی لازم ندارد، ولی برای آینده پایه‌ی خوبی‌ست.
         return True, None
 
     def execute(self, args: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        بررسی ابزارها و برگرداندن خلاصه‌ی نصب و نسخه‌ها
-        """
         verbose = args.get("verbose", False)
 
         tools = check_all()

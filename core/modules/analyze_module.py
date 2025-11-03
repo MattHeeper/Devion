@@ -3,13 +3,11 @@ import json
 from datetime import datetime
 
 class AnalyzeModule:
-    """Analyze the project structure and summarize its contents."""
-
+    
     def run(self, args=None):
         args = args or {}
         current_dir = os.getcwd()
 
-        # شمارش فایل‌ها و پوشه‌ها
         file_count = 0
         folder_count = 0
         file_types = {}
