@@ -5,17 +5,20 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const command = 'help';
+// فرمانی که می‌خوای تست کنی
+const command = 'deploy';
 const argsJson = '{}'
 
+// مسیر دقیق پوشه core
 const corePath = path.join(__dirname, 'core');
 
 console.log('🔧 Running `status` command...');
 console.log('📂 Current working dir:', process.cwd());
 console.log('🐍 Core path:', corePath);
-
+ 
+// اجرای پایتون با PYTHONPATH درست
 const python = spawn('python3', ['-m', 'core.main', command, argsJson], {
-  cwd: __dirname, 
+  cwd: __dirname, // پوشه Devion
   env: { ...process.env, PYTHONPATH: corePath },
 });
 
@@ -30,4 +33,3 @@ python.stderr.on('data', (data) => {
 python.on('close', (code) => {
   console.log(`⚙️ Python exited with code ${code}`);
 });
-

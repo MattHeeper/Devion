@@ -1,25 +1,19 @@
-import json
-
 class HelpModule:
-    def run(self, args=None):
-        """Display available Devion commands and their descriptions."""
-
+    def run(self, args):
         commands = {
-            "init": "Initialize Devion and create configuration files.",
-            "scan": "Scan your system for development tools and environment status.",
-            "analyze": "Analyze the project structure and generate a summary.",
-            "fix": "Fix missing tools or configurations automatically.",
-            "config": "Display current Devion configuration details.",
-            "use": "Activate or switch target environments.",
-            "deploy": "Deploy the current project to the output directory.",
-            "help": "Show available commands and their descriptions."
+            "init": "Initialize a new Devion project.",
+            "scan": "Scan the environment for issues.",
+            "analyze": "Analyze detected issues.",
+            "fix": "Automatically fix common issues.",
+            "config": "Manage project configuration.",
+            "use": "Switch between Devion modes or templates.",
+            "deploy": "Deploy your project.",
+            "help": "Show available commands and usage."
         }
 
         return {
             "success": True,
-            "data": {
-                "commands": commands
-            },
+            "data": {"commands": commands},
             "message": "📘 Devion command reference loaded successfully.",
             "errors": []
         }

@@ -39,7 +39,6 @@ def route_command(command: str, args: Dict[str, Any]) -> Dict[str, Any]:
         module_class = load_module(COMMAND_MAP[command])
         module_instance = module_class()
         result = module_instance.run(args)
-        # استانداردسازی خروجی: مطمئن شو خروجی همیشه keyهای مورد انتظار رو داره
         if not isinstance(result, dict):
             return {
                 "success": False,
@@ -64,13 +63,6 @@ def route_command(command: str, args: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def handle_command(payload: Any) -> Dict[str, Any]:
-    """
-    تابعی که از cli_bridge (stdin) یا دیگر مصرف‌کننده‌ها قابل فراخوانی است.
-
-    - اگر payload یک دیکشنری باشه: انتظار میره کلید 'command' و اختیاری 'args' داشته باشه.
-    - اگر payload یک رشته باشه: فرض میشه نام دستور است و args خالی در نظر گرفته می‌شود.
-    - این تابع یک دیکشنری استاندارد برمی‌گرداند (قابل JSON شدن).
-    """
     try:
         if isinstance(payload, dict):
             command = payload.get("command", "")
@@ -99,9 +91,6 @@ def handle_command(payload: Any) -> Dict[str, Any]:
 
 
 def _cli_main():
-    """
-    اجرای از طریق خط فرمان (python -m core.main <command> [json-args])
-    """
     if len(sys.argv) < 2:
         print(
             json.dumps(
