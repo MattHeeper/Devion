@@ -8,14 +8,14 @@ long_description = (HERE / "README.md").read_text(encoding="utf-8") if (HERE / "
 
 setup(
     name="devion",                     # اسم پکیجی که میخواهی در PyPI منتشر کنی
-    version="0.1.5",
+    version="0.1.6",
     description="Devion — Development Environment Manager (core python package)",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/MattHeeper/Devion",
     author="MattHeeper",
     license="Apache-2.0",
-    packages=find_packages(include=["devion","devion.*"]),
+    packages=find_packages(include=["core", "core.*"]),
     include_package_data=True,
     install_requires=[
         # اگر هسته پایتون وابستگی داره اینجا اضافه کن، مثلا:
