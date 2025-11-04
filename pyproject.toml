@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=6.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "devion"
+version = "0.1.21"
+description = "Devion — Development Environment Manager (core python package)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "MattHeeper"}
+]
+dependencies = []
+
+[tool.setuptools.packages.find]
+include = ["devion", "devion.*"]
+
+[tool.setuptools]
+include-package-data = true

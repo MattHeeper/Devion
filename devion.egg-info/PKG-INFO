@@ -1,0 +1,17 @@
+Metadata-Version: 2.4
+Name: devion
+Version: 0.1.21
+Summary: Devion — Development Environment Manager (core python package)
+Home-page: https://github.com/MattHeeper/Devion
+Author: MattHeeper
+License: Apache-2.0
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-python
+
+# Devion
+
+Devion — Development Environment Manager for Python projects.

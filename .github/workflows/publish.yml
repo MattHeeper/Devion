@@ -1,0 +1,35 @@
+name: Publish Devion to PyPI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'   # اگر بخوای نسخه‌بندی بر اساس tag باشه
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package
+        run: python -m build
+
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.8.11
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
