@@ -6,8 +6,8 @@ import os
 # مسیر‌دهی برای ایمپورت داخلی
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from core.interfaces.module_interface import BaseModule
-from core.utils.system_check import check_all
+from devion.interfaces.module_interface import BaseModule
+from devion.utils.system_check import check_all
 
 
 class StatusModule(BaseModule):

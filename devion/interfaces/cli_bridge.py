@@ -3,7 +3,7 @@ import sys
 import json
 import traceback
 
-from core.main import handle_command
+from devion.main import handle_command
 
 
 def read_stdin() -> str:
