@@ -19,6 +19,7 @@ core/modules/scan_module.py
 core/modules/setup_module.py
 core/modules/status_module.py
 core/modules/use_module.py
+devion/__init__.py
 devion.egg-info/PKG-INFO
 devion.egg-info/SOURCES.txt
 devion.egg-info/dependency_links.txt

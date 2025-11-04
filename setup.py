@@ -8,7 +8,7 @@ long_description = (HERE / "README.md").read_text(encoding="utf-8") if (HERE / "
 
 setup(
     name="devion",                     # اسم پکیجی که میخواهی در PyPI منتشر کنی
-    version="0.1.6",
+    version="0.1.7",
     description="Devion — Development Environment Manager (core python package)",
     long_description=long_description,
     long_description_content_type="text/markdown",
