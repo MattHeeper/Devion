@@ -36,4 +36,6 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
-          packages-dir: dist
+          packages_dir: dist
+          skip_existing: false
+          verify_metadata: false
