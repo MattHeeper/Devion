@@ -2,10 +2,9 @@ name: Publish Devion to PyPI
 
 on:
   push:
-    branches:
-      - main
+    # اگر می‌خوای فقط روی تگ‌های نسخه اجرا بشه
     tags:
-      - 'v*'   # اگر بخوای نسخه‌بندی بر اساس tag باشه
+      - 'v*'
 
 jobs:
   build-and-publish:
@@ -28,8 +27,13 @@ jobs:
       - name: Build package
         run: python -m build
 
+      - name: Check distributions
+        run: twine check dist/*
+
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@v1.8.11
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
+          packages-dir: dist
+          verify-metadata: true
