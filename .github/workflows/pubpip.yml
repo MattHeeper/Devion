@@ -38,4 +38,4 @@ jobs:
           password: ${{ secrets.PYPI_API_TOKEN }}
           packages-dir: dist
           skip-existing: false
-          verify-metadata: false
+          verify-metadata: true
