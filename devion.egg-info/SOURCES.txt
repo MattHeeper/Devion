@@ -25,6 +25,7 @@ test_integration.js
 ./devion/utils/config_loader.py
 ./devion/utils/file_ops.py
 ./devion/utils/system_check.py
+.github/workflows/publish.yml
 cli/devion.js
 cli/index.js
 cli/utils/api.js
