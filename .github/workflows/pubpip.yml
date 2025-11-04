@@ -18,18 +18,18 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install build deps
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel twine
+          pip install build twine
+
+      - name: Clean old builds
+        run: |
+          rm -rf dist build *.egg-info
 
       - name: Build Devion package
         run: |
-          python setup.py sdist bdist_wheel
-
-      - name: Run basic CLI test
-        run: |
-          node test_integration.js || echo "No tests yet"
+          python -m build
 
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@v1.8.11
