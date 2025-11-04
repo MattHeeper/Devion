@@ -15,7 +15,7 @@ setup(
     url="https://github.com/MattHeeper/Devion",
     author="MattHeeper",
     license="Apache-2.0",
-    packages=find_packages(include=["core", "core.*"]),   # پکیج‌های داخل core/
+    packages=find_packages(),
     include_package_data=True,
     install_requires=[
         # اگر هسته پایتون وابستگی داره اینجا اضافه کن، مثلا:
