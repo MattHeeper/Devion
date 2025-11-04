@@ -3,7 +3,7 @@ name: Publish Devion Package
 on:
   push:
     tags:
-      - "v*.*.*"  # اجرا فقط وقتی تگ نسخه مثل v1.0.0 ساخته بشه
+      - "v*.*.*"
 
 jobs:
   build-and-publish:
