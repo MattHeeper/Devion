@@ -1,54 +1,117 @@
-# core/modules/scan_module.py
 import os
 import shutil
 import platform
 import subprocess
-import json
+from typing import Dict, Any, List, Optional
 
-class ScanModule:
+from devion.interfaces.module_interface import DevionModuleInterface
 
-    def run(self, args=None):
-        args = args or {}
+class ScanModule(DevionModuleInterface):
+    """
+    Module responsible for performing a deep scan of the host environment.
+    It checks system specifications (OS, Arch) and the installation status 
+    of critical development tools defined in the toolset.
+    """
 
-        tools = {
-            "python": self._check_tool("python3", ["--version"]),
-            "node": self._check_tool("node", ["--version"]),
-            "npm": self._check_tool("npm", ["--version"]),
-            "git": self._check_tool("git", ["--version"]),
-            "docker": self._check_tool("docker", ["--version"]),
+    def __init__(self, args: dict):
+        """
+        Initializes the Scan module.
+        """
+        super().__init__(args)
+
+    def validate_args(self) -> Dict[str, Any]:
+        """
+        Validates arguments. The scan command currently operates without 
+        mandatory arguments.
+        
+        Returns:
+            Dict: Validated arguments.
+        """
+        return self.args
+
+    def _check_tool(self, cmd: str, args: List[str]) -> Dict[str, Any]:
+        """
+        Helper method to check if a specific CLI tool is installed and retrieve its version.
+
+        Args:
+            cmd (str): The binary name (e.g., 'git').
+            args (List[str]): Arguments to pass to get version (e.g., ['--version']).
+
+        Returns:
+            Dict[str, Any]: A dictionary containing installation status, version, and path.
+        """
+        tool_path = shutil.which(cmd)
+        
+        if not tool_path:
+            return {
+                "installed": False, 
+                "version": None, 
+                "path": None
+            }
+
+        try:
+            # Execute the version command safely
+            output = subprocess.check_output(
+                [cmd] + args, 
+                text=True, 
+                stderr=subprocess.STDOUT
+            ).strip()
+            
+            return {
+                "installed": True, 
+                "version": output, 
+                "path": tool_path
+            }
+        except Exception as e:
+            return {
+                "installed": True, 
+                "version": "unknown", 
+                "path": tool_path, 
+                "error": str(e)
+            }
+
+    def execute(self) -> Dict[str, Any]:
+        """
+        Runs the system scan logic.
+        
+        Returns:
+            Dict: The data payload containing system info and tool statuses.
+        """
+        # Define the list of tools to check
+        tools_to_scan = {
+            "python": ["python3", "--version"],
+            "node": ["node", "--version"],
+            "npm": ["npm", "--version"],
+            "git": ["git", "--version"],
+            "docker": ["docker", "--version"],
         }
 
+        scanned_tools = {}
+        for tool_name, command_info in tools_to_scan.items():
+            cmd = command_info[0]
+            args = command_info[1:]
+            scanned_tools[tool_name] = self._check_tool(cmd, args)
+
+        # Check Devion configuration directory status
         devion_dir = os.path.expanduser("~/.devion")
-        exists = os.path.exists(devion_dir)
+        devion_exists = os.path.exists(devion_dir)
 
         result = {
             "system": {
                 "os": platform.system(),
                 "release": platform.release(),
                 "arch": platform.machine(),
+                "processor": platform.processor(),
             },
-            "tools": tools,
+            "tools": scanned_tools,
             "devion_folder": {
-                "exists": exists,
+                "exists": devion_exists,
                 "path": devion_dir,
-                "files": os.listdir(devion_dir) if exists else [],
+                "files": os.listdir(devion_dir) if devion_exists else [],
             },
         }
 
         return {
-            "success": True,
             "data": result,
             "message": "🔍 System scan completed successfully.",
-            "errors": [],
         }
-
-    def _check_tool(self, cmd, args):
-        path = shutil.which(cmd)
-        if not path:
-            return {"installed": False, "version": None, "path": None}
-
-        try:
-            output = subprocess.check_output([cmd] + args, text=True).strip()
-            return {"installed": True, "version": output, "path": path}
-        except Exception as e:
-            return {"installed": True, "version": "unknown", "path": path, "error": str(e)}

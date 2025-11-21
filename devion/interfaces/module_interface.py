@@ -1,56 +1,61 @@
-
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
 
+class DevionModuleInterface(ABC):
+    """
+    Abstract Base Class (ABC) for all Devion backend modules.
 
-class BaseModule(ABC):
+    All core logic modules (e.g., status, analyze, deploy) must inherit 
+    from this class and implement the abstract methods to ensure consistent
+    execution flow and argument validation.
+    """
 
-    def __init__(self):
-        self.name = self.__class__.__name__
-        self.version = "1.0.0" 
+    def __init__(self, args: dict):
+        """
+        Initializes the module with arguments passed from the Node.js CLI.
+        
+        Args:
+            args (dict): Dictionary of options/arguments received from the CLI.
+        """
+        self.args = args
 
     @abstractmethod
-    def validate(self, args: Dict[str, Any]) -> tuple[bool, Optional[str]]:
+    def validate_args(self) -> dict:
+        """
+        Validates the arguments received by the module.
+
+        This method must be implemented by concrete modules to ensure all 
+        required arguments are present and correctly formatted before execution.
+
+        Returns:
+            dict: A clean dictionary of validated arguments ready for execution.
+            
+        Raises:
+            ValueError: If any required argument is missing or invalid.
+        """
         pass
 
     @abstractmethod
-    def execute(self, args: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self) -> dict:
+        """
+        Contains the main logic of the module.
+
+        This method is where the module performs its core task (e.g., running 
+        system checks, analyzing files, or deploying).
+
+        Returns:
+            dict: The standardized result dictionary containing 'status', 'data', 
+                  and 'message' fields for JSON serialization.
+        """
         pass
 
-    @abstractmethod
-    def format_output(self, result: Dict[str, Any]) -> Dict[str, Any]:
-        pass
+    def run(self) -> dict:
+        """
+        Executes the module lifecycle: validation followed by execution.
 
-    def get_info(self) -> Dict[str, str]:
-        return {
-            "name": self.name,
-            "version": self.version
-        }
-
-    def run(self, args: Dict[str, Any]) -> Dict[str, Any]:
-        is_valid, error = self.validate(args)
-
-        if not is_valid:
-            return {
-                "success": False,
-                "data": None,
-                "message": "Validation failed",
-                "errors": [error]
-            }
-
-        try:
-            result = self.execute(args)
-        except Exception as e:
-            return {
-                "success": False,
-                "data": None,
-                "message": "Execution failed",
-                "errors": [str(e)]
-            }
-
-        try:
-            formatted_result = self.format_output(result)
-            return formatted_result
-        except Exception as e:
-            result["errors"].append(f"Formatting error: {str(e)}")
-            return result
+        This method should be called externally by the CLI bridge.
+        """
+        # Step 1: Validate arguments before proceeding
+        self.validate_args() 
+        
+        # Step 2: Execute the core logic
+        return self.execute()

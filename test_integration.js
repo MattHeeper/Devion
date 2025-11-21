@@ -17,7 +17,7 @@ console.log('📂 Current working dir:', process.cwd());
 console.log('🐍 Core path:', corePath);
  
 // اجرای پایتون با PYTHONPATH درست
-const python = spawn('python3', ['-m', 'core.main', command, argsJson], {
+const python = spawn('python3', ['-m', 'devion.main', command, argsJson], {
   cwd: __dirname, // پوشه Devion
   env: { ...process.env, PYTHONPATH: corePath },
 });

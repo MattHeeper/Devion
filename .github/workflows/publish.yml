@@ -2,7 +2,6 @@ name: Publish Devion to PyPI
 
 on:
   push:
-    # اگر می‌خوای فقط روی تگ‌های نسخه اجرا بشه
     tags:
       - 'v*'
 

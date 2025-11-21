@@ -1,5 +1,18 @@
-node_modules/
 package.json
 package-lock.json
-__pycache__/
 tests/
+# Devion Build Artifacts
+dist/
+
+# Python artifacts
+*.pyc
+__pycache__/
+*.egg-info/
+.coverage
+
+# Node artifacts
+node_modules/
+npm-debug.log
+
+# Temporary user files
+m.txt

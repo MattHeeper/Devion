@@ -1,3 +1,20 @@
 include README.md
 include LICENSE
+include package.json
+include pyproject.toml
+
+# Include the Python core source code
 recursive-include devion *.py
+
+# Critical: Include the Node.js frontend source code
+recursive-include cli *.js
+
+# Include installation scripts
+recursive-include scripts *.sh
+
+# Exclude unnecessary development files and artifacts
+global-exclude *.py[cod]
+global-exclude __pycache__
+global-exclude *.so
+global-exclude .DS_Store
+global-exclude node_modules

@@ -1,115 +1,76 @@
-import subprocess
 import shutil
-from typing import Optional, Dict
+import subprocess
+from typing import Dict, Any, Optional
 
+def check_tool_availability(cmd: str, version_flag: str = "--version") -> Dict[str, Any]:
+    """
+    Checks if a specific command-line tool is available in the system path
+    and attempts to retrieve its version.
 
-def run_command(cmd: list) -> tuple[bool, str]:
+    This generic function replaces the need for separate functions per tool.
+
+    Args:
+        cmd (str): The binary name of the tool (e.g., 'git', 'python3').
+        version_flag (str): The flag used to request the version (default: '--version').
+
+    Returns:
+        Dict[str, Any]: A dictionary containing:
+            - installed (bool): True if found.
+            - version (str|None): The version string if retrievable.
+            - path (str|None): The absolute path to the binary.
+    """
+    tool_path = shutil.which(cmd)
+
+    if not tool_path:
+        return {
+            "installed": False,
+            "version": None,
+            "path": None
+        }
+
     try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
+        # Execute the command to get version info
+        output = subprocess.check_output(
+            [cmd, version_flag],
             text=True,
-            timeout=5
-        )
-        return (result.returncode == 0, result.stdout.strip())
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        return (False, "")
+            stderr=subprocess.STDOUT,
+            timeout=3
+        ).strip()
 
+        # Extract the first line as the version string to keep it clean
+        version_clean = output.split('\n')[0] if output else "Unknown"
 
-def check_python() -> Dict[str, any]:
-    success, output = run_command(["python3", "--version"])
-    
-    if success:
-        version = output.replace("Python ", "")
         return {
             "installed": True,
-            "version": version,
-            "path": shutil.which("python3")
+            "version": version_clean,
+            "path": tool_path
         }
-    
-    return {
-        "installed": False,
-        "version": None,
-        "path": None
-    }
-
-
-def check_node() -> Dict[str, any]:
-    success, output = run_command(["node", "--version"])
-    
-    if success:
-        version = output.replace("v", "")
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
+        # Tool exists but execution failed (e.g., permission error)
         return {
             "installed": True,
-            "version": version,
-            "path": shutil.which("node")
+            "version": "Error retrieving version",
+            "path": tool_path
         }
-    
-    return {
-        "installed": False,
-        "version": None,
-        "path": None
+
+def check_all() -> Dict[str, Dict[str, Any]]:
+    """
+    Checks a predefined list of critical development tools using the generic checker.
+
+    Returns:
+        Dict[str, Dict[str, Any]]: A map of tool names to their status objects.
+    """
+    # Mapping logic: Key is the display name, Value is the binary command
+    tools_map = {
+        "python": "python3",
+        "node": "node",
+        "npm": "npm",
+        "docker": "docker",
+        "git": "git"
     }
 
-
-def check_npm() -> Dict[str, any]:
-    success, output = run_command(["npm", "--version"])
+    results = {}
+    for name, binary in tools_map.items():
+        results[name] = check_tool_availability(binary)
     
-    if success:
-        return {
-            "installed": True,
-            "version": output,
-            "path": shutil.which("npm")
-        }
-    
-    return {
-        "installed": False,
-        "version": None,
-        "path": None
-    }
-
-
-def check_docker() -> Dict[str, any]:
-    success, output = run_command(["docker", "--version"])
-    
-    if success:
-        version = output.replace("Docker version ", "").split(",")[0]
-        return {
-            "installed": True,
-            "version": version,
-            "path": shutil.which("docker")
-        }
-    
-    return {
-        "installed": False,
-        "version": None,
-        "path": None
-    }
-
-
-def check_git() -> Dict[str, any]:
-    success, output = run_command(["git", "--version"])
-    
-    if success:
-        version = output.replace("git version ", "")
-        return {
-            "installed": True,
-            "version": version,
-            "path": shutil.which("git")
-        }
-    
-    return {
-        "installed": False,
-        "version": None,
-        "path": None
-    }
-
-
-def check_all() -> Dict[str, Dict]:
-    return {
-        "python": check_python(),
-        "node": check_node(),
-        "npm": check_npm(),
-        "docker": check_docker(),
-        "git": check_git()
-    }
+    return results

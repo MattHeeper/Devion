@@ -1,58 +1,112 @@
+import shutil
+import subprocess
+from typing import Dict, Any, List, Optional
 
-from typing import Dict, Any, Optional
-import sys
-import os
+from devion.interfaces.module_interface import DevionModuleInterface
 
-# مسیر‌دهی برای ایمپورت داخلی
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+class StatusModule(DevionModuleInterface):
+    """
+    Module responsible for checking the presence and versions of core development tools.
+    It provides a summary of installed vs. missing tools.
+    """
 
-from devion.interfaces.module_interface import BaseModule
-from devion.utils.system_check import check_all
+    def __init__(self, args: dict):
+        """
+        Initializes the Status module.
+        """
+        super().__init__(args)
 
+    def validate_args(self) -> Dict[str, Any]:
+        """
+        Validates arguments. 
+        The status command accepts optional flags like 'verbose' (handled in execute).
+        
+        Returns:
+            Dict: Validated arguments.
+        """
+        return self.args
 
-class StatusModule(BaseModule):
+    def _check_tool(self, cmd: str, args: List[str]) -> Dict[str, Any]:
+        """
+        Internal helper to check if a tool exists and get its version.
+        
+        Args:
+            cmd (str): The binary name (e.g., 'python3').
+            args (List[str]): Arguments to fetch version.
+            
+        Returns:
+            Dict: Status object containing 'installed', 'version', and 'path'.
+        """
+        tool_path = shutil.which(cmd)
+        
+        if not tool_path:
+            return {"installed": False, "version": None, "path": None}
 
-    def validate(self, args: Dict[str, Any]) -> tuple[bool, Optional[str]]:
-        return True, None
+        try:
+            # Run command to get version string
+            output = subprocess.check_output(
+                [cmd] + args, 
+                text=True, 
+                stderr=subprocess.STDOUT
+            ).strip()
+            
+            # Basic cleanup of version string (taking the first line)
+            version_clean = output.split('\n')[0]
+            
+            return {
+                "installed": True, 
+                "version": version_clean, 
+                "path": tool_path
+            }
+        except Exception:
+            return {
+                "installed": True, 
+                "version": "unknown", 
+                "path": tool_path
+            }
 
-    def execute(self, args: Dict[str, Any]) -> Dict[str, Any]:
-        verbose = args.get("verbose", False)
-
-        tools = check_all()
-
-        installed_count = sum(1 for t in tools.values() if t["installed"])
-        total_count = len(tools)
-
-        return {
-            "success": True,
-            "data": {
-                "tools": tools,
-                "summary": {
-                    "installed": installed_count,
-                    "total": total_count,
-                    "missing": total_count - installed_count,
-                },
-            },
-            "message": f"{installed_count}/{total_count} tools installed",
-            "errors": [],
+    def execute(self) -> Dict[str, Any]:
+        """
+        Runs the tool checks and prepares a summarized report.
+        
+        Returns:
+            Dict: The data payload containing tool details and a summary count.
+        """
+        # Define tools to check
+        target_tools = {
+            "python": ["python3", "--version"],
+            "node": ["node", "--version"],
+            "npm": ["npm", "--version"],
+            "git": ["git", "--version"],
+            "docker": ["docker", "--version"],
         }
 
-    def format_output(self, result: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        قالب‌بندی خروجی برای نمایش زیباتر
-        """
-        if not result.get("success"):
-            return result
+        tools_status = {}
+        installed_count = 0
+        formatted_output = {}
 
-        tools = result["data"]["tools"]
-        formatted_tools = {}
-
-        for name, info in tools.items():
-            if info["installed"]:
-                formatted_tools[name] = f"✅ {info['version']}"
+        # 1. Check each tool
+        for name, cmd_info in target_tools.items():
+            result = self._check_tool(cmd_info[0], cmd_info[1:])
+            tools_status[name] = result
+            
+            if result["installed"]:
+                installed_count += 1
+                formatted_output[name] = f"✅ {result['version']}"
             else:
-                formatted_tools[name] = "❌ Not installed"
+                formatted_output[name] = "❌ Not installed"
 
-        result["data"]["formatted"] = formatted_tools
+        total_count = len(target_tools)
+        missing_count = total_count - installed_count
 
-        return result
+        # 2. Construct the final data payload
+        return {
+            "tools": tools_status,
+            "formatted": formatted_output,  # Included for UI compatibility
+            "summary": {
+                "installed": installed_count,
+                "total": total_count,
+                "missing": missing_count,
+            },
+            "message": f"{installed_count}/{total_count} tools installed."
+        }
