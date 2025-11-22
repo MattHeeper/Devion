@@ -1,84 +1,68 @@
-import { Command } from 'commander';
-import ora from 'ora';
-import { callPython } from './utils/api.js'; // Import the clean API bridge
-import * as logger from './utils/logger.js'; // Import the logger utilities
+#!/usr/bin/env node
 
+const { Command } = require('commander');
+const { runCommand } = require('./utils/api');
+
+// Initialize the command line program
 const program = new Command();
 
-/**
- * Executes a command by calling the Python core, managing the spinner and output.
- * This centralized function ensures all command executions have consistent error handling and UI feedback.
- * @param {string} command - The command verb to send to Python (e.g., 'status', 'analyze').
- * @param {object} args - Arguments derived from commander options.
- */
-async function executeCommand(command, args) {
-  const spinner = ora(`Running ${command} command...`).start();
+program
+  .name('devion')
+  .description('Devion CLI: Hybrid Development Environment Manager (Node.js Frontend)')
+  .version('1.0.0', '-v, --version')
+  .allowExcessArguments(false);
 
-  try {
-    // Call the Python core via the bridge
-    const result = await callPython(command, args);
-    spinner.succeed(`Command ${command} finished successfully.`);
-    
-    // Display result based on the command type (simplified logging for now)
-    if (result.success) {
-      logger.header(`\n✨ Devion ${command} Report`);
-      logger.info(JSON.stringify(result.data, null, 2));
-    } else {
-      logger.error(`Operation failed: ${result.message}`);
-      if (result.errors && result.errors.length) {
-        result.errors.forEach(err => logger.info(`- ${err}`));
-      }
-    }
-    
-  } catch (error) {
-    spinner.fail(`Command ${command} failed.`);
-    // Log the detailed error from the API/Python process
-    logger.error(error.message);
-  }
-}
+// --- Core Commands ---
 
-/**
- * Defines the main program metadata and commands.
- */
-function setupCommands() {
-  program
-    .name('devion')
-    .version('1.0.0', '-v, --version')
-    .description('Devion: A Hybrid CLI tool for environment management and analysis.')
-    .action(() => {
-        // Default action shows help
-        program.help();
-    });
+program
+  .command('status')
+  .description('Checks the health and version of core development tools (Python, Node, Git, Docker).')
+  .action(() => {
+    runCommand('status');
+  });
 
-  // --- 1. Status Command ---
-  program
-    .command('status')
-    .description('Checks the installation status of all required tools and dependencies.')
-    .action(() => {
-      // The command verb passed to Python is 'status'
-      executeCommand('status', {});
-    });
+program
+  .command('scan')
+  .description('Performs a deep system scan and reports detailed OS information.')
+  .action(() => {
+    runCommand('scan');
+  });
 
-  // --- 2. Analyze Command ---
-  program
-    .command('analyze')
-    .description('Scans the project for architectural issues and dependency conflicts.')
-    .option('-f, --format <type>', 'Specify output format (e.g., json, cli)', 'cli')
-    .action((options) => {
-      // The command verb passed to Python is 'analyze'
-      executeCommand('analyze', { format: options.format });
-    });
-    
-  // Add other commands (e.g., init, fix, deploy) following this pattern
-}
+program
+  .command('analyze')
+  .description('Analyzes the current project structure and generates file statistics.')
+  .action(() => {
+    runCommand('analyze');
+  });
 
-/**
- * Main entry point function.
- */
-export function run() {
-  setupCommands();
-  program.parse(process.argv);
-}
+program
+  .command('fix')
+  .description('Attempts to fix missing configurations or dependencies.')
+  .action((options) => {
+    runCommand('fix', options);
+  });
 
-// Execute the main run function
-run();
+program
+  .command('deploy')
+  .description('Builds and packages the project into a distributable format.')
+  .action(() => {
+    runCommand('deploy');
+  });
+
+program
+  .command('config')
+  .description('Manages global settings in ~/.devion/config.json.')
+  .option('-k, --key <key>', 'Configuration key to modify or view.')
+  .option('-v, --value <value>', 'New value to set for the key.')
+  .action((options) => {
+    runCommand('config', options);
+  });
+
+program
+  .command('init')
+  .description('Re-initializes the global Devion configuration file.')
+  .action(() => {
+    runCommand('init');
+  });
+
+program.parse(process.argv);
