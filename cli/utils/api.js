@@ -1,72 +1,90 @@
-import { spawn } from 'child_process';
-import path from 'path';
-import { fileURLToPath } from 'url';
+const { spawn } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+const { logError, logSuccess, logInfo } = require('./logger');
 
 /**
- * ESM workaround for __dirname and __filename.
+ * Helper to detect the correct Python executable.
+ * Looks for the virtual environment relative to the installation directory.
  */
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+function getPythonExecutable() {
+  // Calculate project root based on the location of this file (cli/utils/api.js)
+  // We go up two levels: cli/utils -> cli -> root
+  const projectRoot = path.resolve(__dirname, '../../');
+  
+  // 1. Check for Linux/macOS virtual environment in the project root
+  const unixVenv = path.join(projectRoot, '.venv', 'bin', 'python');
+  if (fs.existsSync(unixVenv)) {
+    return unixVenv;
+  }
+
+  // 2. Check for Windows virtual environment in the project root
+  const winVenv = path.join(projectRoot, '.venv', 'Scripts', 'python.exe');
+  if (fs.existsSync(winVenv)) {
+    return winVenv;
+  }
+
+  // 3. Fallback to system python (only works if installed globally or in active venv)
+  return 'python3';
+}
 
 /**
- * Executes a Python command through the core module.
- * * This function acts as the primary bridge between the Node.js CLI and the Python backend.
- * It spawns a child process, executes the specific Devion module, and handles JSON communication.
- * * @param {string} command - The command to execute (e.g., 'status', 'init').
- * @param {object} [args={}] - Optional arguments to pass to the Python module.
- * @returns {Promise<object>} - Resolves with the parsed JSON response from Python.
+ * Executes a command in the Python core backend.
+ * @param {string} command The Devion command name (e.g., 'status', 'analyze').
+ * @param {object} options CLI options passed to the command.
  */
-export function callPython(command, args = {}) {
-  return new Promise((resolve, reject) => {
-    // Calculate the project root path relative to this file (cli/utils/api.js -> project root)
-    const projectRoot = path.resolve(__dirname, '../../');
+function runCommand(command, options = {}) {
+  const optionsJson = JSON.stringify(options);
+  const pythonExecutable = getPythonExecutable();
+  
+  // Arguments for the Python core
+  const commandArgs = [
+      '-m', 
+      'devion.main', 
+      command, 
+      optionsJson 
+  ]; 
 
-    // Prepare arguments for the Python executable
-    // We use '-m devion.main' to run the package as a module
-    const pythonArgs = ['-m', 'devion.main', command, JSON.stringify(args)];
+  logInfo(`Executing Python core: ${pythonExecutable} ${commandArgs.join(' ')}`);
 
-    const pythonProcess = spawn('python3', pythonArgs, {
-      cwd: projectRoot,
-      env: {
-        ...process.env,
-        // Critical: Add project root to PYTHONPATH so Python can find the 'devion' package
-        PYTHONPATH: projectRoot,
-      },
-    });
+  // We keep cwd as process.cwd() so commands run in the user's current folder,
+  // but we execute using the Python from our internal venv.
+  const pythonProcess = spawn(pythonExecutable, commandArgs, {
+    cwd: process.cwd()
+  });
 
-    let stdout = '';
-    let stderr = '';
-
-    // Capture standard output
-    pythonProcess.stdout.on('data', (data) => {
-      stdout += data.toString();
-    });
-
-    // Capture standard error
-    pythonProcess.stderr.on('data', (data) => {
-      stderr += data.toString();
-    });
-
-    // Handle process exit
-    pythonProcess.on('close', (code) => {
-      if (code !== 0) {
-        // Reject if the process failed (non-zero exit code)
-        return reject(new Error(`Core process failed with code ${code}.\nDetails: ${stderr}`));
+  pythonProcess.stdout.on('data', (data) => {
+    try {
+      const output = data.toString().trim();
+      // Try to parse output as JSON to pretty print if needed
+      const jsonOutput = JSON.parse(output);
+      
+      if (jsonOutput.success) {
+          logSuccess('Operation Successful:', JSON.stringify(jsonOutput.data, null, 2));
+          if(jsonOutput.message) console.log(jsonOutput.message);
+      } else {
+          logError('Operation Failed:', jsonOutput.message);
+          if (jsonOutput.errors && jsonOutput.errors.length > 0) {
+              jsonOutput.errors.forEach(err => console.error(`- ${err}`));
+          }
       }
+    } catch (e) {
+      // If output isn't JSON (e.g. print statements), just show it
+      console.log(data.toString());
+    }
+  });
 
-      try {
-        // Attempt to parse the JSON response from the core
-        const result = JSON.parse(stdout);
-        resolve(result);
-      } catch (error) {
-        // Handle cases where Python output is not valid JSON
-        reject(new Error(`Invalid response from Core:\n${stdout}\nParse Error: ${error.message}`));
-      }
-    });
+  pythonProcess.stderr.on('data', (data) => {
+    logError('Python Core Error:', data.toString());
+  });
 
-    // Handle spawn errors (e.g., Python not installed)
-    pythonProcess.on('error', (error) => {
-      reject(new Error(`Failed to spawn Python process: ${error.message}`));
-    });
+  pythonProcess.on('close', (code) => {
+    if (code !== 0) {
+      logError(`Python process exited with code ${code}`);
+    }
   });
 }
+
+module.exports = {
+  runCommand
+};
